@@ -32,9 +32,9 @@ export class AuthGuard implements CanActivate {
         secret: this.configService.getOrThrow<string>('JWT_SECRET_KEY'),
         algorithms: ['HS512'],
       });
-      // if (!payload.verified) {
-      //   return false;
-      // }
+      if (!payload.verified) {
+        return false;
+      }
       request['user'] = payload;
       return true;
     } catch (e) {
