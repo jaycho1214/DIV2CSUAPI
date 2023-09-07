@@ -26,6 +26,7 @@ export class AuthService {
           'type',
           'verified_at',
           'rejected_at',
+          'deleted_at',
           'password',
           jsonArrayFrom(
             eb
@@ -53,6 +54,7 @@ export class AuthService {
           sub: sn,
           scope: (data.permissions ?? []).map(({ value }) => value),
           verified: data.verified_at ? true : data.rejected_at ? false : null,
+          deleted: !!data.deleted_at,
           type: data.type,
         },
         {
@@ -124,6 +126,7 @@ export class AuthService {
         sub: form.sn,
         scope: [],
         verified: null,
+        deleted: false,
         type: form.type,
       },
       {
