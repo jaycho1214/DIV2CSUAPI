@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model overtimes {
+  id          String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  giver_id    String    @db.VarChar(11)
+  receiver_id String    @db.VarChar(11)
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  verified_at DateTime? @db.Timestamp(0)
+  value       Int       @db.TinyInt
+  reason      String?   @db.VarChar(1000)
+  started_at  DateTime  @db.Timestamp(0)
+  ended_at    DateTime  @db.Timestamp(0)
+}
+
+model permissions {
+  id          String   @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  soldiers_id String   @db.VarChar(11)
+  created_at  DateTime @default(now()) @db.Timestamp(0)
+  value       String   @db.VarChar(50)
+}
+
+model points {
+  id              String    @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  giver_id        String    @db.VarChar(11)
+  receiver_id     String    @db.VarChar(11)
+  created_at      DateTime  @default(now()) @db.Timestamp(0)
+  verified_at     DateTime? @db.Timestamp(0)
+  value           Int       @db.TinyInt
+  reason          String?   @db.VarChar(1000)
+  used_id         String?   @db.VarChar(36)
+  given_at        DateTime  @db.Timestamp(0)
+  rejected_at     DateTime? @db.Timestamp(0)
+  rejected_reason String?   @db.VarChar(1000)
+}
+
+model soldiers {
+  name        String        @db.VarChar(20)
+  created_at  DateTime      @default(now()) @db.Timestamp(0)
+  password    String        @db.VarChar(200)
+  verified_at DateTime?     @db.Timestamp(0)
+  sn          String        @id @unique(map: "sn") @db.VarChar(11)
+  type        soldiers_type
+  deleted_at  DateTime?     @db.Timestamp(0)
+  rejected_at DateTime?     @db.Timestamp(0)
+  deleted_by  String?       @db.VarChar(36)
+}
+
+model used {
+  id         String   @id @default(dbgenerated("(uuid())")) @db.VarChar(36)
+  ref_id     String   @db.VarChar(36)
+  reason     String?  @db.VarChar(1000)
+  created_by String   @db.VarChar(11)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+enum soldiers_type {
+  enlisted
+  nco
+}
