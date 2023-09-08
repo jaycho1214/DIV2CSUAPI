@@ -22,6 +22,7 @@ export class PointsService {
     return this.dbService
       .selectFrom('points')
       .where('receiver_id', '=', sn)
+      .orderBy('created_at desc')
       .select('id')
       .limit(20)
       .offset(Math.min(0, page) * 20)
