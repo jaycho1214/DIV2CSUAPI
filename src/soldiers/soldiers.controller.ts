@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -122,5 +123,28 @@ export class SoldiersController {
       }
     }
     return this.appService.updateSoldier(data.sn, {});
+  }
+
+  @Delete()
+  deleteUser(
+    @Jwt() { scope }: JwtPayload,
+    @Query('sn') sn?: string,
+    @Query('value') value?: boolean,
+  ) {
+    if (sn == null) {
+      throw new HttpException('sn(군번) 값이 없습니다', HttpStatus.BAD_REQUEST);
+    }
+    if (value == null) {
+      throw new HttpException('value 값이 없습니다', HttpStatus.BAD_REQUEST);
+    }
+    if (!_.intersection(scope, ['Admin', 'UserAdmin', 'DeleteUser']).length) {
+      throw new HttpException(
+        '유저 삭제 권한이 없습니다',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    return this.appService.updateSoldier(sn, {
+      deleted_at: value ? new Date() : null,
+    });
   }
 }

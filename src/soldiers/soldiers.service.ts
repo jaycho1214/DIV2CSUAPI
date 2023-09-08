@@ -16,6 +16,7 @@ export class SoldiersService {
         'soldiers.name',
         'soldiers.type',
         'soldiers.verified_at',
+        'soldiers.deleted_at',
         jsonArrayFrom(
           eb
             .selectFrom('permissions')
