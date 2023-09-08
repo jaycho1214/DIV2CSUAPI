@@ -1,12 +1,13 @@
 import { pbkdf2Sync, randomBytes } from 'crypto';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { DBService } from 'src/db.service';
+import { DBService } from 'src/db/db.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InsertObject, NoResultError } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/mysql';
 import { DB } from 'kysely-codegen';
 import { DatabaseError } from '@planetscale/database';
+import { PermissionsService } from 'src/permissions/permissions.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     private dbService: DBService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private permissionService: PermissionsService,
   ) {}
 
   async signIn(sn: string, password: string) {
@@ -113,7 +115,7 @@ export class AuthService {
     }
     if (permissions.length > 0) {
       permissions.forEach((permission) => {
-        this.validatePermission(permission);
+        this.permissionService.validatePermission(permission);
       });
       await this.dbService
         .insertInto('permissions')
@@ -187,26 +189,5 @@ export class AuthService {
       .where('sn', '=', sn)
       .set({ password: salt + hashed })
       .executeTakeFirstOrThrow();
-  }
-
-  private validatePermission(permission: string) {
-    if (
-      ![
-        'Admin',
-        'UserAdmin',
-        'ListUser',
-        'DeleteUser',
-        'VerifyUser',
-        'GivePermissionUser',
-        'ResetPasswordUser',
-        'PointAdmin',
-        'GiveMeritPoint',
-        'GiveLargeMeritPoint',
-        'GiveDemeritPoint',
-        'GiveLargeDemeritPoint',
-      ].includes(permission)
-    ) {
-      throw new HttpException('알 수 없는 권한입니다', HttpStatus.BAD_REQUEST);
-    }
   }
 }

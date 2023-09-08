@@ -85,44 +85,49 @@ export class SoldiersController {
   @Post('verify')
   async verifySoldier(
     @Jwt() { scope }: JwtPayload,
-    @Body() data: VerifyUserDto,
+    @Body() form: VerifyUserDto,
   ) {
     if (!_.intersection(['Admin', 'UserAdmin', 'VerifyUser'], scope).length) {
       throw new HttpException('권한이 없습니다', HttpStatus.FORBIDDEN);
     }
-    return this.appService.verifySoldier(data.sn, data.value);
+    return this.appService.verifySoldier(form.sn, form.value);
   }
 
   @Put()
   async updateSoldierPermissions(
     @Jwt() { sub, scope }: JwtPayload,
-    @Body() data: UpdateUserDto,
+    @Body() form: UpdateUserDto,
   ) {
-    if (data.sn === sub) {
+    const permissions = JSON.parse(form.permissions);
+    if (form.sn === sub) {
       throw new HttpException(
         '본인 정보는 수정할 수 없습니다',
         HttpStatus.BAD_REQUEST,
       );
     }
-    const targetUser = await this.appService.fetchSoldier(data.sn);
-    if (targetUser.permissions.map((p) => p.value).includes('Admin')) {
+    const targetUser = await this.appService.fetchSoldier(form.sn);
+    if (targetUser.permissions.map(({ value }) => value).includes('Admin')) {
       throw new HttpException(
         '관리자는 수정할 수 없습니다',
         HttpStatus.FORBIDDEN,
       );
     }
-    if (data.permissions) {
-      if (
-        !_.intersection(scope, ['Admin', 'UserAdmin', 'GiveUserPermission'])
-          .length
-      ) {
-        throw new HttpException(
-          '권한 수정 권한이 없습니다',
-          HttpStatus.FORBIDDEN,
-        );
-      }
+    if (
+      !_.intersection(scope, ['Admin', 'UserAdmin', 'GiveUserPermission'])
+        .length
+    ) {
+      throw new HttpException(
+        '권한 수정 권한이 없습니다',
+        HttpStatus.FORBIDDEN,
+      );
     }
-    return this.appService.updateSoldier(data.sn, {});
+    if (permissions.includes('Admin')) {
+      throw new HttpException(
+        '관리자 권한은 추가할 수 없습니다',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    return this.appService.setSoldierPermissions(form.sn, permissions);
   }
 
   @Delete()

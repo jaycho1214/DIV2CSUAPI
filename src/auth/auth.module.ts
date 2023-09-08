@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { DBModule } from 'src/db/db.module';
+import { PermissionsModule } from 'src/permissions/permissions.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { DBService } from 'src/db.service';
-import { JwtService } from '@nestjs/jwt';
 
 @Module({
-  imports: [ConfigModule.forRoot()],
+  imports: [DBModule, PermissionsModule],
   controllers: [AuthController],
-  providers: [DBService, JwtService, AuthService],
+  providers: [JwtService, AuthService],
 })
 export class AuthModule {}

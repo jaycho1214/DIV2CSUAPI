@@ -14,5 +14,5 @@ export class UpdateUserDto {
   sn: string;
 
   @IsJSON()
-  permissions?: string[];
+  permissions: string;
 }

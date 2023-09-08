@@ -1,12 +1,17 @@
 import { jsonArrayFrom } from 'kysely/helpers/mysql';
 import { Injectable } from '@nestjs/common';
-import { DBService } from 'src/db.service';
+import { DBService } from 'src/db/db.service';
 import { UpdateObject } from 'kysely';
 import { DB } from 'kysely-codegen';
+import { PermissionsService } from 'src/permissions/permissions.service';
 
 @Injectable()
 export class SoldiersService {
-  constructor(private dbService: DBService) {}
+  constructor(
+    private dbService: DBService,
+    private permissionsService: PermissionsService,
+  ) {}
+
   async fetchSoldier(sn: string) {
     return this.dbService
       .selectFrom('soldiers')
@@ -112,6 +117,27 @@ export class SoldiersService {
       .updateTable('soldiers')
       .where('sn', '=', sn)
       .set(data)
+      .executeTakeFirstOrThrow();
+  }
+
+  async setSoldierPermissions(sn: string, permissions: string[]) {
+    permissions.forEach((p) => {
+      this.permissionsService.validatePermission(p);
+    });
+    await this.dbService
+      .deleteFrom('permissions')
+      .where('soldiers_id', '=', sn)
+      .executeTakeFirstOrThrow();
+    if (permissions.length === 0) {
+      return;
+    }
+    return this.dbService
+      .insertInto('permissions')
+      .values(
+        this.permissionsService
+          .sortPermission(permissions)
+          .map((p) => ({ soldiers_id: sn, value: p })),
+      )
       .executeTakeFirstOrThrow();
   }
 }

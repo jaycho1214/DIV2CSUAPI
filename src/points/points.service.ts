@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { DBService } from 'src/db.service';
+import { DBService } from 'src/db/db.service';
 import { InsertObject, NoResultError } from 'kysely';
 import { DB } from 'kysely-codegen';
 
