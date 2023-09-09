@@ -81,7 +81,7 @@ export class SoldiersService {
         ),
       )
       .$if(page != null, (qb) => qb.limit(10))
-      .$if(page != null, (qb) => qb.offset(Math.min(1, page) * 10 - 10));
+      .$if(page != null, (qb) => qb.offset(Math.max(1, page) * 10 - 10));
 
     if (includeCount) {
       return Promise.all([
