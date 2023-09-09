@@ -62,7 +62,7 @@ export class PointsController {
 
   @Post('verify')
   async verifyPoint(
-    @Jwt() { sub, scope }: JwtPayload,
+    @Jwt() { sub, scope, type }: JwtPayload,
     @Body() { id, value, rejectReason }: VerifyPointDto,
   ) {
     const point = await this.appService.fetchPoint(id);
@@ -75,6 +75,12 @@ export class PointsController {
     if (point.giver_id !== sub) {
       throw new HttpException(
         '본인한테 요청된 상벌점만 승인/반려 할 수 있십니다',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (type === 'enlisted') {
+      throw new HttpException(
+        '용사는 상벌점을 승인/반려 할 수 없습니다',
         HttpStatus.FORBIDDEN,
       );
     }

@@ -37,6 +37,7 @@ export class SoldiersController {
       if (type === 'enlisted') {
         return this.appService.searchSoldiers({
           query,
+          type: 'nco',
           permissions: [
             'GiveMeritPoint',
             'GiveLargeMeritPoint',
