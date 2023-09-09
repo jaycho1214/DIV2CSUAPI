@@ -1,0 +1,36 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'yarn'
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfileo
+      - name: Build Application
+        run: yarn run build && zip dist/main.js.zip dist/main.js appspec.yml
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+      - name: Push build to AWS S3
+        run: aws s3 cp dist/main.js.zip s3://div2csu-bucket/api-source-code/main.js.zip
+      - name: Trigger CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name DIV2CSUCodeDeploy \
+            --s3-location bucket=div2csu-bucket,key=api-source-code/main.js.zip,bundleType=zip \
+            --deployment-group-name DIV2CSUAPICodeDeployment
