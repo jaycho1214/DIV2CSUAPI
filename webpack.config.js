@@ -1,3 +1,4 @@
+const { sentryWebpackPlugin } = require('@sentry/webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = (options, webpack) => {
@@ -8,7 +9,10 @@ module.exports = (options, webpack) => {
 
   return {
     ...options,
-    externals: [],
+    externals: {
+      '@sentry/profiling-node': 'commonjs @sentry/profiling-node',
+    },
+    devtool: 'source-map',
     output: {
       ...options.output,
       libraryTarget: 'commonjs2',
@@ -35,6 +39,11 @@ module.exports = (options, webpack) => {
           }
           return false;
         },
+      }),
+      sentryWebpackPlugin({
+        org: process.env.SENTRY_ORG,
+        project: 'api',
+        authToken: process.env.SENTRY_AUTH_TOKEN,
       }),
     ],
   };
