@@ -19,9 +19,14 @@ export class PointsService {
   }
 
   async fetchPointsHistory(sn: string, page = 0) {
+    const { type } = await this.dbService
+      .selectFrom('soldiers')
+      .where('sn', '=', sn)
+      .select('type')
+      .executeTakeFirstOrThrow();
     return this.dbService
       .selectFrom('points')
-      .where('receiver_id', '=', sn)
+      .where(type === 'enlisted' ? 'receiver_id' : 'giver_id', '=', sn)
       .orderBy('created_at desc')
       .select('id')
       .limit(20)
@@ -30,9 +35,14 @@ export class PointsService {
   }
 
   async fetchPointsHistoryCount(sn: string) {
+    const { type } = await this.dbService
+      .selectFrom('soldiers')
+      .where('sn', '=', sn)
+      .select('type')
+      .executeTakeFirstOrThrow();
     return this.dbService
       .selectFrom('points')
-      .where('receiver_id', '=', sn)
+      .where(type === 'enlisted' ? 'receiver_id' : 'giver_id', '=', sn)
       .select((eb) => eb.fn.count('id').as('count'))
       .executeTakeFirst();
   }

@@ -8,6 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import * as _ from 'lodash';
 import { PointsService } from './points.service';
 import { Jwt } from 'src/auth/auth.decorator';
 import { JwtPayload } from 'src/auth/auth.interface';
@@ -36,10 +37,17 @@ export class PointsController {
 
   @Get('list')
   async fetchPoints(
-    @Jwt() { sub, type }: JwtPayload,
+    @Jwt() { sub, type, scope }: JwtPayload,
     @Query('sn') sn?: string,
     @Query('page') page?: number,
   ) {
+    if (
+      sn != null &&
+      sn !== sub &&
+      !_.intersection(['PointAdmin', 'Admin', 'ViewPoint'], scope).length
+    ) {
+      throw new HttpException('접근 권한이 없습니다', HttpStatus.FORBIDDEN);
+    }
     if (type === 'enlisted') {
       return this.appService.fetchPointsHistory(sub, page ?? 0);
     }

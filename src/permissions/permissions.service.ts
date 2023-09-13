@@ -33,6 +33,7 @@ export class PermissionsService {
         'GivePermissionUser',
         'ResetPasswordUser',
         'PointAdmin',
+        'ViewPoint',
         'GiveMeritPoint',
         'GiveLargeMeritPoint',
         'GiveDemeritPoint',
