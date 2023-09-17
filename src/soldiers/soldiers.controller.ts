@@ -143,7 +143,7 @@ export class SoldiersController {
     if (value == null) {
       throw new HttpException('value 값이 없습니다', HttpStatus.BAD_REQUEST);
     }
-    const targetUser = await this.appService.fetchSoldier(form.sn);
+    const targetUser = await this.appService.fetchSoldier(sn);
     if (targetUser.permissions.map(({ value }) => value).includes('Admin')) {
       throw new HttpException(
         '관리자는 삭제할 수 없습니다',
