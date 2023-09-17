@@ -8,6 +8,8 @@ jobs:
   build:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     runs-on: ubuntu-latest
 
     steps:
