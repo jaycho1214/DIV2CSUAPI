@@ -132,7 +132,7 @@ export class SoldiersController {
   }
 
   @Delete()
-  deleteUser(
+  async deleteUser(
     @Jwt() { scope }: JwtPayload,
     @Query('sn') sn?: string,
     @Query('value') value?: boolean,
