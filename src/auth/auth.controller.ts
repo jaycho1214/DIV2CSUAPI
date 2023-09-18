@@ -51,8 +51,9 @@ export class AuthController {
 
   /**
    * 비밀번호 변경 API
-   * @param {{sub: string}} 변경 대상 군번
-   * @param {{password: string, newPassword: string}} 기존 비밀번호와 새 비밀번호
+   * @param {{sub: string}} sub 변경 대상 군번
+   * @param {string} password 기존 비밀번호
+   * @param {string} newPassword 새 비밀번호
    * @returns {Promise}
    */
   @Post('updatePassword')
@@ -69,11 +70,12 @@ export class AuthController {
 
   /**
    * 비밀번호 초기화 API
-   * @param {{sub: string, scope: string}} 요청자의 군번과 권한
-   * @param {{sn: string}} 비밀번호 초기화 대상자의 군번
-   * @throws Admin, UserAdmin, ResetPasswordUser가 없을 경우 오류
+   * @param {string} sub 요청자의 군번
+   * @param {string[]} scope 요청자의 권한
+   * @param {string} sn 비밀번호 초기화 대상자의 군번
+   * @throws 요청자에게 Admin, UserAdmin, ResetPasswordUser가 없을 경우 오류
    * @throws 요청자와 대상자의 군번이 같은 경우 오류 
-   * @returns 
+   * @returns {{password: string}} 새 비밀번호
    */
   @Post('resetPassword')
   async resetPassword(
