@@ -32,5 +32,5 @@ export class VerifyPointDto {
   value?: boolean;
 
   @IsOptional()
-  rejectReason: string;
+  rejectReason?: string;
 }
