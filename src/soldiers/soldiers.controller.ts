@@ -20,6 +20,21 @@ import { UpdateUserDto, VerifyUserDto } from './soldiers.interface';
 export class SoldiersController {
   constructor(private appService: SoldiersService) {}
 
+  /**
+   * 유저 검색
+   * @param type 유저 유형, 간부인지 용사인지
+   * @param scope 유저 권한 
+   * @param {boolean} autoComplete True일 경우 자동완성을 위한 검색 (권한 무시) 
+   * @param targetType 검색하는 유저의 유형 (간부, 용사)
+   * @param query 검색어 (빈 검색어는 모든 유저를 리턴함)
+   * @param page 페이지
+   * @param unverifiedOnly 승인받지 않은 유저만 찾기
+   * @param {boolean} count True일 경우 검색된 유저가 몇명인지 리턴
+   * 
+   * @throws Admin, UserAdmin, VerifyUser, ListUser 권한이 없이 승인받지 않은 유저를 검색할려 할때
+   * @throws 자동완성을 위한 검색이 아닌데 Admin, UserAdmin, ListUser 권한 없이 검색할려 할때 
+   * @returns 
+   */
   @Get('search')
   async searchSoldier(
     @Jwt() { type, scope }: JwtPayload,
@@ -73,6 +88,12 @@ export class SoldiersController {
     });
   }
 
+  /**
+   * 용사 정보를 가져옴
+   * @param {string} sub 요청하는 용사의 군번
+   * @param {?sn} sn 대상자의 군번, null일 경우 sub으로 대체됨 
+   * @returns 용사 정보, 데이터가 없을 경우 빈 object를 리턴
+   */
   @Get()
   async fetchSoldier(@Jwt() { sub }: JwtPayload, @Query('sn') sn?: string) {
     const target = sn || sub;
@@ -83,6 +104,15 @@ export class SoldiersController {
     return data;
   }
 
+  /**
+   * 회원가입 승인
+   * @param {string[]} scope 요청자의 권한
+   * @param form 대상자 군번 및 액션
+   * @param form.sn 대상자 군번
+   * @param form.value True일 경우, 승인 False일 경우 반려
+   * @throws {HttpException} 회원가입 승인 권한이 없을 경우 오류
+   * @returns {Promise}
+   */
   @Post('verify')
   async verifySoldier(
     @Jwt() { scope }: JwtPayload,
@@ -94,6 +124,19 @@ export class SoldiersController {
     return this.appService.verifySoldier(form.sn, form.value);
   }
 
+  /**
+   * 권한 수정/추가/삭제
+   * @param {string} sub 요청자의 군번
+   * @param {string[]} scope 요청자의 권한 
+   * @param form
+   * @param form.sn 대상자 군번
+   * @param {string} form.permissions JSON Deserializable한 Permissions 예) '["Admin"]'
+   * @throws 본인 권한을 수정할 경우 오류
+   * @throws 관리자의 권한을 수정할 경우 오류
+   * @throws 관리자 권한을 추가할려할 경우 오류
+   * @throws 권한 변경 권한이 없을 경우 오류
+   * @returns 
+   */
   @Put()
   async updateSoldierPermissions(
     @Jwt() { sub, scope }: JwtPayload,
@@ -131,9 +174,20 @@ export class SoldiersController {
     return this.appService.setSoldierPermissions(form.sn, permissions);
   }
 
+  /**
+   * 유저 삭제
+   * @param requestSn 요청자 군번
+   * @param scope 요청자 권한
+   * @param sn 대상자 군번
+   * @param value 삭제 여부, True일 경우 삭제, False일 경우 복원
+   * @throws 관리자를 삭제할려 할 경우 오류
+   * @throws 유저 삭제 권한이 없을 경우 오류
+   * @throws 본인을 삭제할려 할 경우 오류
+   * @returns 
+   */
   @Delete()
   async deleteUser(
-    @Jwt() { scope }: JwtPayload,
+    @Jwt() { sub: requestSn, scope }: JwtPayload,
     @Query('sn') sn?: string,
     @Query('value') value?: boolean,
   ) {
@@ -142,6 +196,9 @@ export class SoldiersController {
     }
     if (value == null) {
       throw new HttpException('value 값이 없습니다', HttpStatus.BAD_REQUEST);
+    }
+    if(requestSn === sn) {
+      throw new HttpException('본인은 삭제할 수 없습니다', HttpStatus.BAD_REQUEST);
     }
     const targetUser = await this.appService.fetchSoldier(sn);
     if (targetUser.permissions.map(({ value }) => value).includes('Admin')) {
