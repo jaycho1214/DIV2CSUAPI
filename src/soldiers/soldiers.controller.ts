@@ -22,8 +22,8 @@ export class SoldiersController {
 
   /**
    * 유저 검색
-   * @param type 유저 유형, 간부인지 용사인지
-   * @param scope 유저 권한 
+   * @param type 요청자의 유저 유형, 간부인지 용사인지
+   * @param scope 요청자의 유저 권한 
    * @param {boolean} autoComplete True일 경우 자동완성을 위한 검색 (권한 무시) 
    * @param targetType 검색하는 유저의 유형 (간부, 용사)
    * @param query 검색어 (빈 검색어는 모든 유저를 리턴함)
