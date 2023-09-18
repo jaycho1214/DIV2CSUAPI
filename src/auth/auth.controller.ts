@@ -21,11 +21,25 @@ import { randomBytes } from 'crypto';
 export class AuthController {
   constructor(private appService: AuthService) {}
 
+  /**
+   * 로그인 API
+   * @param {{sn: string, password: string}} form 로그인을 위한 군번과 비밀번호
+   * @returns {{accessToken: string}} 암호화된 Access Token을 리턴함
+   */
   @Post('signIn')
   signIn(@Body() form: SignInDto) {
     return this.appService.signIn(form.sn, form.password);
   }
 
+  /**
+   * 회원가입 API
+   * @param form 회원가입을 위한 정보
+   * @param form.sn 군번
+   * @param form.name 이름
+   * @param {'enlisted' | 'nco'} form.type 용사및 간부 여부
+   * @param form.password 비밀번호
+   * @returns {Promise<{accessToken: string}>} 암호화된 Access Token을 리턴함
+   */
   @Post('signUp')
   signUp(@Body() form: SignUpDto) {
     const permissions = [];
@@ -35,6 +49,12 @@ export class AuthController {
     return this.appService.signUp(form, permissions);
   }
 
+  /**
+   * 비밀번호 변경 API
+   * @param {{sub: string}} 변경 대상 군번
+   * @param {{password: string, newPassword: string}} 기존 비밀번호와 새 비밀번호
+   * @returns {Promise}
+   */
   @Post('updatePassword')
   updatePassword(
     @Jwt() { sub }: JwtPayload,
@@ -47,6 +67,14 @@ export class AuthController {
     });
   }
 
+  /**
+   * 비밀번호 초기화 API
+   * @param {{sub: string, scope: string}} 요청자의 군번과 권한
+   * @param {{sn: string}} 비밀번호 초기화 대상자의 군번
+   * @throws Admin, UserAdmin, ResetPasswordUser가 없을 경우 오류
+   * @throws 요청자와 대상자의 군번이 같은 경우 오류 
+   * @returns 
+   */
   @Post('resetPassword')
   async resetPassword(
     @Jwt() { sub, scope }: JwtPayload,
@@ -66,6 +94,7 @@ export class AuthController {
         HttpStatus.FORBIDDEN,
       );
     }
+    // 랜덤 비밀번호 생성
     const password = randomBytes(6).toString('hex');
     await this.appService.updatePassword({
       sn,
