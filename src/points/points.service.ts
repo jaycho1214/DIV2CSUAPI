@@ -101,6 +101,30 @@ export class PointsService {
         );
       }
     }
+
+     // 상/벌점 내용과 대응값
+     const meritData = [
+      { id: 1, name: '상점 1', value: 5 },
+      { id: 2, name: '상점 2', value: 3 },
+    ];
+    const demeritData = [
+      { id: 1, name: '벌점 1', value: -5 },
+      { id: 2, name: '벌점 2', value: -3 },
+    ];
+    
+    // 상점인지 벌점인지 확인하고 값을 가져옴.
+    let pointValue = 0;
+    if (data.value) {
+      const foundMerit = meritData.find(merit => merit.id === Number(data.value));
+      const foundDemerit = demeritData.find(demerit => demerit.id === Number(data.value));
+      if (foundMerit) {
+        pointValue = foundMerit.value;
+      } else if (foundDemerit) {
+        pointValue = foundDemerit.value;
+      }
+    }
+    data.value = pointValue;
+
     return this.dbService
       .insertInto('points')
       .values(data)
